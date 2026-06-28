@@ -3,7 +3,7 @@
   "name": "Z.ai Chat",
   "short_name": "Z.ai",
   "description": "Z.ai AI Assistant - Web App",
-  "start_url": ".",
+  "start_url": "https://chat.z.ai/",
   "scope": ".",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui", "browser"],

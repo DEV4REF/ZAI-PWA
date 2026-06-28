@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="fa" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -13,7 +13,7 @@
   <meta name="description" content="Z.ai AI Assistant - Web App">
   <meta name="color-scheme" content="dark">
 
-  <title>Z.ai</title>
+  <title>Z.ai — Advanced AI Chatbot & Agent</title>
 
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
@@ -21,83 +21,425 @@
   <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
 
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #050510;
+      --bg-2: #0a0a1f;
+      --glass: rgba(255, 255, 255, 0.04);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --text: #ffffff;
+      --text-dim: #a1a1aa;
+      --text-faint: #52525b;
+      --purple: #7c5cfc;
+      --blue: #4f7cfc;
+      --pink: #fc5c9c;
+      --green: #5cfca8;
     }
 
     html, body {
       width: 100%;
-      height: 100%;
-      height: 100dvh;
-      overflow: hidden;
-      background: #0a0a0a;
-      color: #ffffff;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100%;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       -webkit-font-smoothing: antialiased;
       -webkit-tap-highlight-color: transparent;
+      position: relative;
     }
 
-    /* Loading splash screen */
-    #splash {
-      position: fixed;
-      inset: 0;
+    body {
+      min-height: 100dvh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: #0a0a0a;
-      z-index: 1000;
-      transition: opacity 0.4s ease, visibility 0.4s ease;
-      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      padding: 24px;
+      padding-top: calc(24px + env(safe-area-inset-top));
+      padding-bottom: calc(24px + env(safe-area-inset-bottom));
     }
 
-    #splash.hidden {
-      opacity: 0;
-      visibility: hidden;
+    /* === Animated background blobs === */
+    .bg-blobs {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      overflow: hidden;
       pointer-events: none;
     }
-
-    .splash-logo {
-      width: 72px;
-      height: 72px;
-      margin-bottom: 24px;
-      animation: pulse 1.8s ease-in-out infinite;
-    }
-
-    .splash-logo svg {
-      width: 100%;
-      height: 100%;
-    }
-
-    .splash-text {
-      color: #ffffff;
-      font-size: 20px;
-      font-weight: 600;
-      letter-spacing: 2px;
-      margin-bottom: 20px;
-    }
-
-    .splash-loader {
-      width: 40px;
-      height: 40px;
-      border: 3px solid rgba(255,255,255,0.1);
-      border-top-color: #7c5cfc;
+    .blob {
+      position: absolute;
       border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+      filter: blur(80px);
+      opacity: 0.45;
+      animation: float 18s ease-in-out infinite;
+    }
+    .blob.b1 {
+      width: 380px; height: 380px;
+      background: radial-gradient(circle, var(--purple), transparent 70%);
+      top: -120px; right: -100px;
+    }
+    .blob.b2 {
+      width: 320px; height: 320px;
+      background: radial-gradient(circle, var(--blue), transparent 70%);
+      bottom: -80px; left: -80px;
+      animation-delay: -6s;
+      animation-duration: 22s;
+    }
+    .blob.b3 {
+      width: 260px; height: 260px;
+      background: radial-gradient(circle, var(--pink), transparent 70%);
+      top: 40%; left: 60%;
+      opacity: 0.25;
+      animation-delay: -12s;
+      animation-duration: 26s;
+    }
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33%      { transform: translate(40px, -30px) scale(1.1); }
+      66%      { transform: translate(-30px, 40px) scale(0.95); }
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    /* === Subtle grid overlay === */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(124, 92, 252, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124, 92, 252, 0.06) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: radial-gradient(circle at center, black 0%, transparent 75%);
+      -webkit-mask-image: radial-gradient(circle at center, black 0%, transparent 75%);
     }
 
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.05); opacity: 0.85; }
+    /* === Main card (glassmorphism) === */
+    .card {
+      width: 100%;
+      max-width: 460px;
+      background: var(--glass);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid var(--glass-border);
+      border-radius: 28px;
+      padding: 36px 28px 28px;
+      box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.4),
+        0 0 80px rgba(124, 92, 252, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(20px) scale(0.98);
+      animation: card-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+    }
+    @keyframes card-in {
+      to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    /* Network status banner */
+    /* Top highlight bar */
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 20%; right: 20%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(124, 92, 252, 0.6), transparent);
+    }
+
+    /* === Logo === */
+    .logo {
+      width: 84px;
+      height: 84px;
+      margin: 0 auto 20px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, var(--purple), var(--blue));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow:
+        0 10px 30px rgba(124, 92, 252, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      animation: logo-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
+      position: relative;
+    }
+    .logo::after {
+      content: '';
+      position: absolute;
+      inset: -8px;
+      border-radius: 30px;
+      background: radial-gradient(circle, rgba(124, 92, 252, 0.4), transparent 70%);
+      z-index: -1;
+      animation: glow-pulse 2.5s ease-in-out infinite;
+    }
+    .logo svg { width: 50%; height: 50%; }
+    @keyframes logo-in {
+      from { transform: scale(0) rotate(-180deg); opacity: 0; }
+      to   { transform: scale(1) rotate(0); opacity: 1; }
+    }
+    @keyframes glow-pulse {
+      0%, 100% { transform: scale(1); opacity: 0.6; }
+      50%      { transform: scale(1.15); opacity: 0.9; }
+    }
+
+    /* === Title === */
+    .title {
+      text-align: center;
+      font-size: 38px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #fff 30%, var(--purple) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+      opacity: 0;
+      animation: fade-up 0.6s ease 0.6s forwards;
+      font-family: 'Inter', -apple-system, sans-serif;
+    }
+    .subtitle {
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-dim);
+      letter-spacing: 1.5px;
+      font-weight: 500;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      opacity: 0;
+      animation: fade-up 0.6s ease 0.8s forwards;
+      font-family: 'Inter', -apple-system, sans-serif;
+    }
+
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* === Typing line === */
+    .typing-box {
+      min-height: 60px;
+      margin: 0 0 24px;
+      padding: 14px 16px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text);
+      text-align: center;
+      opacity: 0;
+      animation: fade-up 0.6s ease 1s forwards;
+      position: relative;
+      font-family: 'Vazirmatn', -apple-system, sans-serif;
+    }
+    .typing-box::before {
+      content: '›';
+      color: var(--purple);
+      margin-left: 6px;
+      font-weight: bold;
+      opacity: 0.6;
+    }
+    .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1em;
+      background: var(--purple);
+      margin-right: 2px;
+      vertical-align: text-bottom;
+      animation: blink 0.9s step-end infinite;
+    }
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    /* === Features grid === */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+    .feature {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      padding: 14px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 8px;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: transform 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+    }
+    .feature:hover {
+      transform: translateY(-4px);
+      border-color: rgba(124, 92, 252, 0.4);
+      background: rgba(124, 92, 252, 0.08);
+    }
+    .feature-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, rgba(124, 92, 252, 0.2), rgba(79, 124, 252, 0.2));
+      border: 1px solid rgba(124, 92, 252, 0.3);
+    }
+    .feature-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: var(--purple);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .feature-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .feature-desc {
+      font-size: 10.5px;
+      color: var(--text-faint);
+      line-height: 1.4;
+    }
+    /* staggered reveal */
+    .feature:nth-child(1) { animation: fade-up 0.5s ease 1.3s forwards; }
+    .feature:nth-child(2) { animation: fade-up 0.5s ease 1.45s forwards; }
+    .feature:nth-child(3) { animation: fade-up 0.5s ease 1.6s forwards; }
+    .feature:nth-child(4) { animation: fade-up 0.5s ease 1.75s forwards; }
+    .feature:nth-child(5) { animation: fade-up 0.5s ease 1.9s forwards; }
+    .feature:nth-child(6) { animation: fade-up 0.5s ease 2.05s forwards; }
+
+    /* === CTA button === */
+    .cta-wrap {
+      text-align: center;
+      opacity: 0;
+      transform: translateY(10px);
+      animation: fade-up 0.6s ease 2.3s forwards;
+    }
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 32px;
+      background: linear-gradient(135deg, var(--purple), var(--blue));
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      font-family: 'Vazirmatn', -apple-system, sans-serif;
+      position: relative;
+      overflow: hidden;
+      box-shadow:
+        0 8px 24px rgba(124, 92, 252, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      transition: transform 0.15s ease, box-shadow 0.2s ease;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .cta:active { transform: scale(0.97); }
+    .cta:hover {
+      box-shadow:
+        0 12px 32px rgba(124, 92, 252, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+    .cta svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 0.2s ease;
+    }
+    .cta:hover svg { transform: translateX(-3px); }
+
+    /* Shine effect */
+    .cta::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transform: skewX(-20deg);
+      animation: shine 3s ease-in-out infinite;
+    }
+    @keyframes shine {
+      0%, 60% { left: -100%; }
+      80%, 100% { left: 200%; }
+    }
+
+    .cta-meta {
+      margin-top: 14px;
+      font-size: 11px;
+      color: var(--text-faint);
+      letter-spacing: 0.5px;
+    }
+    .cta-meta .countdown {
+      color: var(--purple);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* === Footer === */
+    .footer {
+      margin-top: 24px;
+      font-size: 11px;
+      color: var(--text-faint);
+      text-align: center;
+      opacity: 0;
+      animation: fade-in 0.6s ease 2.6s forwards;
+      line-height: 1.6;
+    }
+    .footer a {
+      color: var(--text-dim);
+      text-decoration: none;
+      border-bottom: 1px dotted var(--text-faint);
+    }
+    @keyframes fade-in {
+      to { opacity: 1; }
+    }
+
+    /* === Skip button === */
+    .skip-btn {
+      position: fixed;
+      top: calc(16px + env(safe-area-inset-top));
+      left: calc(16px + env(safe-area-inset-left));
+      background: var(--glass);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      color: var(--text-dim);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      z-index: 100;
+      opacity: 0;
+      animation: fade-in 0.5s ease 1s forwards;
+      transition: color 0.2s, border-color 0.2s;
+      font-family: 'Vazirmatn', sans-serif;
+    }
+    .skip-btn:hover {
+      color: var(--text);
+      border-color: rgba(124, 92, 252, 0.5);
+    }
+
+    /* === Offline banner === */
     #offline-banner {
       position: fixed;
       top: 0;
@@ -114,120 +456,126 @@
       display: none;
     }
 
-    /* Fallback view (shown if redirect fails or is blocked) */
-    #fallback {
-      position: fixed;
-      inset: 0;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 24px;
-      padding-top: calc(24px + env(safe-area-inset-top));
-      padding-bottom: calc(24px + env(safe-area-inset-bottom));
-      background: #0a0a0a;
+    /* === Small screens === */
+    @media (max-width: 380px) {
+      .card { padding: 28px 20px 24px; border-radius: 24px; }
+      .logo { width: 72px; height: 72px; }
+      .title { font-size: 32px; }
+      .features { gap: 8px; }
+      .feature { padding: 12px 8px; }
+      .feature-title { font-size: 11px; }
+      .feature-desc { font-size: 10px; }
     }
 
-    #fallback.visible {
-      display: flex;
-    }
-
-    .fallback-logo {
-      width: 80px;
-      height: 80px;
-      margin-bottom: 24px;
-    }
-
-    .fallback-logo svg {
-      width: 100%;
-      height: 100%;
-    }
-
-    .fallback-title {
-      font-size: 22px;
-      font-weight: 700;
-      margin-bottom: 8px;
-      letter-spacing: 1px;
-    }
-
-    .fallback-subtitle {
-      font-size: 14px;
-      color: #a1a1aa;
-      margin-bottom: 28px;
-      max-width: 320px;
-      line-height: 1.5;
-    }
-
-    .fallback-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 28px;
-      background: #7c5cfc;
-      color: #ffffff;
-      border: none;
-      border-radius: 999px;
-      font-size: 15px;
-      font-weight: 600;
-      text-decoration: none;
-      cursor: pointer;
-      transition: background 0.2s ease, transform 0.1s ease;
-      -webkit-appearance: none;
-      appearance: none;
-    }
-
-    .fallback-btn:active {
-      transform: scale(0.97);
-    }
-
-    .fallback-btn:hover {
-      background: #6b4ef0;
-    }
-
-    .fallback-status {
-      margin-top: 20px;
-      font-size: 12px;
-      color: #52525b;
+    /* Respect reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      .blob { animation: none; }
+      .cta::before { display: none; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Splash Screen -->
-  <div id="splash">
-    <div class="splash-logo">
-      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="100" height="100" rx="22" fill="#7c5cfc"/>
-        <path d="M30 35 L70 35 L55 55 L70 55" stroke="white" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-        <circle cx="70" cy="72" r="3.5" fill="white"/>
-      </svg>
-    </div>
-    <div class="splash-text">Z.ai</div>
-    <div class="splash-loader"></div>
+  <!-- Background layers -->
+  <div class="bg-blobs">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
   </div>
+  <div class="bg-grid"></div>
 
-  <!-- Offline Banner -->
-  <div id="offline-banner">&#9888; No internet connection</div>
+  <!-- Skip button -->
+  <button class="skip-btn" id="skipBtn" type="button">رد شو ›</button>
 
-  <!-- Fallback view (shown only if redirect fails) -->
-  <div id="fallback">
-    <div class="fallback-logo">
+  <!-- Offline banner -->
+  <div id="offline-banner">&#9888; ارتباط اینترنتی برقرار نیست</div>
+
+  <!-- Main card -->
+  <div class="card">
+    <!-- Logo -->
+    <div class="logo">
       <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="100" height="100" rx="22" fill="#7c5cfc"/>
-        <path d="M30 35 L70 35 L55 55 L70 55" stroke="white" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-        <circle cx="70" cy="72" r="3.5" fill="white"/>
+        <path d="M30 35 L70 35 L55 55 L70 55" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <circle cx="70" cy="72" r="4" fill="white"/>
       </svg>
     </div>
-    <div class="fallback-title">Z.ai Chat</div>
-    <div class="fallback-subtitle">Tap below to open the Z.ai assistant in your browser or installed app.</div>
-    <a class="fallback-btn" href="https://chat.z.ai/" target="_blank" rel="noopener">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
-      </svg>
-      Open Z.ai
-    </a>
-    <div class="fallback-status" id="fallback-status"></div>
+
+    <!-- Title -->
+    <h1 class="title">Z.ai</h1>
+    <div class="subtitle">Advanced AI Chatbot &amp; Agent</div>
+
+    <!-- Typing line -->
+    <div class="typing-box">
+      <span class="cursor"></span><span id="typed"></span>
+    </div>
+
+    <!-- Features -->
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div class="feature-title">گفت‌وگو و استدلال</div>
+        <div class="feature-desc">تحلیل عمیق، استدلال زنجیره‌ای</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <div class="feature-title">جستجوی وب</div>
+        <div class="feature-desc">تحقیق زنده و به‌روز</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.5-3.5L9 20"/></svg>
+        </div>
+        <div class="feature-title">تولید تصویر</div>
+        <div class="feature-desc">خلق و درک تصاویر</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </div>
+        <div class="feature-title">کد و Agent</div>
+        <div class="feature-desc">اجرای خودکار وظایف</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
+        </div>
+        <div class="feature-title">چندزبانه</div>
+        <div class="feature-desc">فارسی، انگلیسی، چینی و…</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <div class="feature-title">پاسخ سریع</div>
+        <div class="feature-desc">عملکرد بالا و لحظه‌ای</div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-wrap">
+      <a class="cta" id="enterBtn" href="https://chat.z.ai/" target="_blank" rel="noopener">
+        ورود به Z.ai
+        <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+      </a>
+      <div class="cta-meta">
+        ورود خودکار تا <span class="countdown" id="countdown">۵</span> ثانیه دیگر
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      powered by GLM ·
+      <a href="https://z.ai" target="_blank" rel="noopener">z.ai</a>
+    </div>
   </div>
 
   <script>
@@ -235,117 +583,117 @@
       'use strict';
 
       var TARGET_URL = 'https://chat.z.ai/';
-      var splash = document.getElementById('splash');
       var offlineBanner = document.getElementById('offline-banner');
-      var fallback = document.getElementById('fallback');
-      var fallbackStatus = document.getElementById('fallback-status');
+      var skipBtn = document.getElementById('skipBtn');
+      var enterBtn = document.getElementById('enterBtn');
+      var typedEl = document.getElementById('typed');
+      var countdownEl = document.getElementById('countdown');
 
-      // ----- Online / offline detection -----
-      function updateOnlineStatus() {
-        if (navigator.onLine) {
-          offlineBanner.style.display = 'none';
+      // === Typing animation ===
+      var phrases = [
+        'سلام! من آماده‌ام…',
+        'به Z.ai خوش آمدید 🚀',
+        'هوش مصنوعی پیشرفته، اینجا.'
+      ];
+      var phraseIdx = 0;
+      var charIdx = 0;
+      var typingForward = true;
+
+      function typeLoop() {
+        var current = phrases[phraseIdx];
+        if (typingForward) {
+          charIdx++;
+          if (charIdx > current.length) {
+            typingForward = false;
+            setTimeout(typeLoop, 1800);
+            return;
+          }
         } else {
-          offlineBanner.style.display = 'block';
+          charIdx--;
+          if (charIdx < 0) {
+            typingForward = true;
+            phraseIdx = (phraseIdx + 1) % phrases.length;
+            setTimeout(typeLoop, 350);
+            return;
+          }
         }
+        typedEl.textContent = current.substring(0, charIdx);
+        setTimeout(typeLoop, typingForward ? 70 : 35);
+      }
+      setTimeout(typeLoop, 1100);
+
+      // === Online / offline ===
+      function updateOnlineStatus() {
+        offlineBanner.style.display = navigator.onLine ? 'none' : 'block';
       }
       window.addEventListener('online', updateOnlineStatus);
       window.addEventListener('offline', updateOnlineStatus);
       updateOnlineStatus();
 
-      // ----- Redirect to Z.ai -----
-      // z.ai responds with X-Frame-Options: SAMEORIGIN, so it CANNOT be
-      // embedded in an iframe. We redirect the top-level window instead.
-      // When the PWA is installed (display: standalone), this still feels
-      // like a native app because Chrome hides the browser chrome.
-      function showFallback(message) {
-        splash.classList.add('hidden');
-        fallback.classList.add('visible');
-        if (message) fallbackStatus.textContent = message;
-      }
+      // === Redirect with connectivity probe ===
+      var didEnter = false;
 
-      function redirectToTarget() {
-        // navigator.onLine is notoriously unreliable (it can be true even
-        // on captive portals or when DNS fails). Do a real connectivity
-        // probe before redirecting, so we can show a friendly offline
-        // message instead of letting the browser show chrome-error.
+      function enterZai() {
+        if (didEnter) return;
+        didEnter = true;
+
+        // Connectivity probe before redirect (so we don't show chrome-error
+        // when offline). Timeout = 3s.
         var probeUrl = TARGET_URL + '?ping=' + Date.now();
-        var didRedirect = false;
-
         var probe = new Promise(function (resolve, reject) {
           fetch(probeUrl, { mode: 'no-cors', cache: 'no-store', method: 'HEAD' })
-            .then(function () { resolve(); })
+            .then(resolve)
             .catch(reject);
-          // Timeout: if probe doesn't respond in 3s, treat as offline
-          setTimeout(function () { reject(new Error('probe timeout')); }, 3000);
+          setTimeout(function () { reject(new Error('timeout')); }, 3000);
         });
 
         probe
           .then(function () {
-            didRedirect = true;
-            try {
-              window.location.replace(TARGET_URL);
-            } catch (e) {
-              didRedirect = false;
-              showFallback('Could not open Z.ai automatically.');
-            }
+            try { window.location.replace(TARGET_URL); }
+            catch (e) { window.location.href = TARGET_URL; }
           })
           .catch(function () {
-            showFallback('You appear to be offline. Connect to the internet and try again.');
-          });
-
-        // Safety: if neither path resolves in 5s, show fallback
-        setTimeout(function () {
-          if (!didRedirect && !fallback.classList.contains('visible')) {
-            showFallback('Could not reach Z.ai. Tap below to retry.');
-          }
-        }, 5000);
-      }
-
-      // Register the service worker FIRST, then wait for it to be ready
-      // before redirecting. If we redirect too early, the SW never gets
-      // a chance to install, which breaks offline support.
-      var swReadyPromise = Promise.resolve();
-      if ('serviceWorker' in navigator) {
-        swReadyPromise = navigator.serviceWorker.register('sw.js')
-          .then(function (reg) {
-            console.log('SW registered:', reg.scope);
-            // navigator.serviceWorker.ready resolves once an active SW
-            // controls this page. Bounded by timeout below.
-            return navigator.serviceWorker.ready;
-          })
-          .then(function () {
-            console.log('SW active');
-          })
-          .catch(function (err) {
-            console.log('SW registration failed:', err);
+            // Offline — show banner; user can retry by tapping the button.
+            didEnter = false;
+            offlineBanner.style.display = 'block';
+            countdownEl.textContent = '—';
           });
       }
 
-      // Race: wait for SW to be ready, but no longer than 2s.
-      // After that, redirect regardless (so users on slow devices
-      // still get to Z.ai quickly).
-      Promise.race([
-        swReadyPromise,
-        new Promise(function (resolve) { setTimeout(resolve, 2000); })
-      ]).then(redirectToTarget);
-
-      // Fallback safety net: if redirect hasn't happened after 7s (e.g.
-      // the browser blocked it), show the manual open button.
-      setTimeout(function () {
-        if (window.location.href.indexOf('chat.z.ai') === -1 &&
-            window.location.href.indexOf('z.ai') === -1) {
-          showFallback('Redirect blocked by browser. Tap to open manually.');
+      // === Countdown + auto-redirect after 5s ===
+      var remaining = 5;
+      var countdownTimer = setInterval(function () {
+        if (didEnter) { clearInterval(countdownTimer); return; }
+        remaining--;
+        if (remaining <= 0) {
+          clearInterval(countdownTimer);
+          if (countdownEl) countdownEl.textContent = '۰';
+          enterZai();
+        } else {
+          // Persian digits
+          var persianDigits = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+          if (countdownEl) countdownEl.textContent = persianDigits[remaining] || remaining;
         }
-      }, 7000);
+      }, 1000);
 
-      // ----- Handle Android back button (PWA) -----
-      window.addEventListener('popstate', function () {
-        if (window.location.hash !== '#home') {
-          // Re-show fallback if user navigates back to the shell
-          splash.classList.add('hidden');
-          fallback.classList.add('visible');
-        }
+      // === Button handlers ===
+      enterBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        clearInterval(countdownTimer);
+        enterZai();
       });
+
+      skipBtn.addEventListener('click', function () {
+        clearInterval(countdownTimer);
+        enterZai();
+      });
+
+      // === Service worker ===
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js')
+          .then(function (reg) { console.log('SW registered:', reg.scope); })
+          .catch(function (err) { console.log('SW failed:', err); });
+      }
     })();
   </script>
 
